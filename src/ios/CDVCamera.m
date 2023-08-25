@@ -37,6 +37,16 @@
 
 #define CDV_PHOTO_PREFIX @"cdv_photo_"
 
+@implementation NSBundle (PluginExtensions)
+
++ (NSBundle*) pluginBundle:(CDVPlugin*)plugin {
+    NSBundle* bundle = [NSBundle bundleWithPath: [[NSBundle mainBundle] pathForResource:NSStringFromClass([plugin class]) ofType: @"bundle"]];
+    return bundle;
+}
+@end
+
+#define PluginLocalizedString(plugin, key, comment) [[NSBundle pluginBundle:(plugin)] localizedStringForKey:(key) value:nil table:nil]
+
 static NSSet* org_apache_cordova_validArrowDirections;
 
 static NSString* toBase64(NSData* data) {
@@ -164,11 +174,11 @@ static NSString* toBase64(NSData* data) {
                  {
                      // Denied; show an alert
                      dispatch_async(dispatch_get_main_queue(), ^{
-                         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"] message:NSLocalizedString(@"Access to the camera has been prohibited; please enable it in the Settings app to continue.", nil) preferredStyle:UIAlertControllerStyleAlert];
-                         [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                         UIAlertController *alertController = [UIAlertController alertControllerWithTitle:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"] message:PluginLocalizedString(@"Access to the camera has been prohibited; please enable it in the Settings app to continue.", nil) preferredStyle:UIAlertControllerStyleAlert];
+                         [alertController addAction:[UIAlertAction actionWithTitle:PluginLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
                              [weakSelf sendNoPermissionResult:command.callbackId];
                          }]];
-                         [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Settings", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                         [alertController addAction:[UIAlertAction actionWithTitle:PluginLocalizedString(@"Settings", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
                              [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString] options:@{} completionHandler:nil];
                              [weakSelf sendNoPermissionResult:command.callbackId];
                          }]];
@@ -185,11 +195,11 @@ static NSString* toBase64(NSData* data) {
                 if (!granted) {
                     // Denied; show an alert
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"] message:NSLocalizedString(@"Access to the camera roll has been prohibited; please enable it in the Settings to continue.", nil) preferredStyle:UIAlertControllerStyleAlert];
-                        [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                        UIAlertController *alertController = [UIAlertController alertControllerWithTitle:[[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"] message:PluginLocalizedString(@"Access to the camera roll has been prohibited; please enable it in the Settings to continue.", nil) preferredStyle:UIAlertControllerStyleAlert];
+                        [alertController addAction:[UIAlertAction actionWithTitle:PluginLocalizedString(@"OK", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
                             [weakSelf sendNoPermissionResult:command.callbackId];
                         }]];
-                        [alertController addAction:[UIAlertAction actionWithTitle:NSLocalizedString(@"Settings", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
+                        [alertController addAction:[UIAlertAction actionWithTitle:PluginLocalizedString(@"Settings", nil) style:UIAlertActionStyleDefault handler:^(UIAlertAction * _Nonnull action) {
                             [[UIApplication sharedApplication] openURL:[NSURL URLWithString:UIApplicationOpenSettingsURLString]];
                             [weakSelf sendNoPermissionResult:command.callbackId];
                         }]];
@@ -317,7 +327,7 @@ static NSString* toBase64(NSData* data) {
         UIImagePickerController* cameraPicker = (UIImagePickerController*)navigationController;
 
         if(![cameraPicker.mediaTypes containsObject:(NSString*)kUTTypeImage]){
-            [viewController.navigationItem setTitle:NSLocalizedString(@"Videos", nil)];
+            [viewController.navigationItem setTitle:PluginLocalizedString(@"Videos", nil)];
         }
     }
 }

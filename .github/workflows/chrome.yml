@@ -47,9 +47,6 @@ jobs:
         with:
           node-version: ${{ env.node-version }}
 
-      - name: Run install xvfb
-        run: sudo apt-get install xvfb
-
       - name: Run Environment Information
         run: |
           node --version
@@ -65,9 +62,11 @@ jobs:
         run: npm i -g github:apache/cordova-paramedic
 
       - name: Run paramedic tests
+        uses: coactions/setup-xvfb@v1
         env:
           test_config: 'browser.config.json'
           # Generally, this should automatically work for cordova-paramedic & plugins. If the path is unique, this can be manually changed.
           test_plugin_path: ${{ endswith(env.repo, '/cordova-paramedic') && './spec/testable-plugin/' || './' }}
           paramedic: ${{ endswith(env.repo, '/cordova-paramedic') && 'node main.js' || 'cordova-paramedic' }}
-        run: xvfb-run --auto-servernum ${{ env.paramedic }} --config ./pr/local/${{ env.test_config }} --plugin ${{ env.test_plugin_path }}
+        with:
+          run: ${{ env.paramedic }} --config ./pr/local/${{ env.test_config }} --plugin ${{ env.test_plugin_path }}

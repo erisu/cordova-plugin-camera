@@ -61,7 +61,7 @@ jobs:
 
       - name: Run paramedic install
         if: ${{ endswith(env.repo, '/cordova-paramedic') != true }}
-        run: npm i -g github:apache/cordova-paramedic
+        run: npm i -g github:erisu/cordova-paramedic\#feat/browser-test
 
       - name: Run paramedic tests
         env:

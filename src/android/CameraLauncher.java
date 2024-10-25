@@ -238,11 +238,12 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         return permissions.toArray(new String[0]);
     }
 
-    private String getTempDirectoryPath() {
+    private File getPluginCacheDir() {
         File cache = cordova.getActivity().getCacheDir();
-        // Create the cache directory if it doesn't exist
-        cache.mkdirs();
-        return cache.getAbsolutePath();
+        cache.mkdirs(); // Ensure the cache directory exists
+        File subDir = new File(cache, "org.apache.cordova.camera");
+        subDir.mkdirs(); // Ensure the cache directory exists
+        return subDir;
     }
 
     /**
@@ -367,10 +368,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
             throw new IllegalArgumentException("Invalid Encoding Type: " + encodingType);
         }
 
-        File cacheDir = new File(getTempDirectoryPath(), "org.apache.cordova.camera");
-        cacheDir.mkdir();
-
-        return new File(cacheDir, fileName);
+        return new File(getPluginCacheDir(), fileName);
     }
 
 
@@ -664,33 +662,33 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
         return "";
     }
 
-
     private String outputModifiedBitmap(Bitmap bitmap, Uri uri, String mimeTypeOfOriginalFile) throws IOException {
         // Some content: URIs do not map to file paths (e.g. picasa).
         String realPath = FileHelper.getRealPath(uri, this.cordova);
         String fileName = calculateModifiedBitmapOutputFileName(mimeTypeOfOriginalFile, realPath);
 
-        String modifiedPath = getTempDirectoryPath() + "/" + fileName;
+        File modifiedFile = new File(getPluginCacheDir(), fileName);
+        String modifiedFilePath = modifiedFile.getAbsolutePath();
 
-        OutputStream os = new FileOutputStream(modifiedPath);
+        OutputStream os = new FileOutputStream(modifiedFile);
         CompressFormat compressFormat = getCompressFormatForEncodingType(this.encodingType);
 
-        bitmap.compress(compressFormat, this.mQuality, os);
-        os.close();
+        bitmap.compress(compressFormat, this.mQuality, os); // compress and write to output streams
+        os.close(); // close output streams
 
         if (exifData != null && this.encodingType == JPEG) {
             try {
                 if (this.correctOrientation && this.orientationCorrected) {
                     exifData.resetOrientation();
                 }
-                exifData.createOutFile(modifiedPath);
+                exifData.createOutFile(modifiedFilePath);
                 exifData.writeExifData();
                 exifData = null;
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        return modifiedPath;
+        return modifiedFilePath;
     }
 
     private String calculateModifiedBitmapOutputFileName(String mimeTypeOfOriginalFile, String realPath) {
@@ -1002,7 +1000,7 @@ public class CameraLauncher extends CordovaPlugin implements MediaScannerConnect
                 // Generate a temporary file
                 String timeStamp = new SimpleDateFormat(TIME_FORMAT).format(new Date());
                 String fileName = "IMG_" + timeStamp + (getExtensionForEncodingType());
-                localFile = new File(getTempDirectoryPath() + fileName);
+                localFile = new File(getPluginCacheDir(), fileName);
                 galleryUri = Uri.fromFile(localFile);
                 writeUncompressedImage(fileStream, galleryUri);
                 try {
